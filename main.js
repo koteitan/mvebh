@@ -22,7 +22,7 @@ var loadlink=function(){
   var query=location.search.substr(1);
   if(query.length>0){
     //get matrix
-    var str = query.match(/(o=)(.*$)/)[2];
+    var str = query.match(/(h=)(.*$)/)[2];
     str=str.replace(/\./g, " ");
     str=str.replace(/;/g, "\n");
     str=str.replace(/_/g, "");
