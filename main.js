@@ -142,3 +142,50 @@ var expand=function(){
   lastcommand=expand;
 };
 
+Hydra = function(input){
+  if(input instanceof Array){
+    this.a = input.clone();
+  }else if(typeof input === "string" || input instanceof String){
+    Hydra.parse(input);
+  }
+}
+Hydra.parse = function(str){
+}
+/* this.toString()=string representation of this */
+/* this.toString(x)=string representation of partial hydra starting by x */
+Hydra.prototype.toString=function(x){
+  if(x==undefined){
+    return this.toString(0);
+  }else{
+    var ret="";
+    var a=this.a;
+    var xs=a.length;
+    if(a.length==0)return "";
+    ret+=a[x][1];
+    var c=this.getchildren(x);
+    if(c.length==0)return ret;
+    ret+="^";
+    if(c.length>1)ret+="(";
+    for(var ci=0;ci<c.length;ci++){
+      if(ci!=0)ret+="+";
+      ret+=this.toString(c[ci]);
+    }
+    if(c.length>1)ret+=")";
+    return ret;
+  }
+}
+/* getchildlen(p)=children indices array of the node at p-th column */
+Hydra.prototype.getchildren=function(p){
+  var c=[];
+  for(var x=p+1;x<this.a.length;x++)
+    if(this.getparent(x)==p)
+      c.push(x);
+  return c;
+}
+/* getparent(c) = parent index of c */
+Hydra.prototype.getparent=function(c){
+  var a=this.a;
+  for(var x=c-1;x>=0;x--)
+    if(a[x][0]<a[c][0])return x;
+  return -1;
+}
