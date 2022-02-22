@@ -65,11 +65,11 @@ var doclear=function(){
   }
   history.pushState(null,null,url);
 }
-/** parse()
+/** doparse()
   * @brief parse intext and output result into outtext.
   * @details This function is called by clicking "parse" button.
 */
-var parse=function(){
+var doparse=function(){
   autosave();
   //input
   var mstr=intext.value;
@@ -88,7 +88,7 @@ var parse=function(){
         str=xstr[x];
         if(str!=""){
           //parse
-          var h=hydra.parse(str);
+          var h=Hydra.parse(str);
           //out string expression
           outtext.value+=h.toString();
           //out tree expression
@@ -98,7 +98,7 @@ var parse=function(){
     }
     outtext.value+="\n";
   }//y
-  lastcommand=parse;
+  lastcommand=doparse;
 };
 
 /** expand()
@@ -150,6 +150,55 @@ Hydra = function(input){
   }
 }
 Hydra.parse = function(str){
+  var a=[];
+  var label=0;
+  var level=0;
+  var parenstack=[];
+  var pre; /* previous char */
+  for(var i=0;i<str.length;i++){
+    var c=str[i];
+    if(c>='0'&&c<'9'){
+      label=label*10+parseInt(c)
+      c="digit";
+    }else{
+      switch(c){
+        case '(':
+          parenstack.push(level);
+          if(pre=="digit"){
+            a.push([level,label]);
+            label=0;
+          }
+          if(pre!='^')level++;
+          break;
+        case '^':
+          if(pre=="digit"){
+            a.push([level,label]);
+            label=0;
+          }
+          level++;
+          break;
+        case ')':
+          if(pre=="digit"){
+            a.push([level,label]);
+            label=0;
+          }
+          level=parenstack.pop();
+          break;
+        case '+':
+        case ',':
+          if(pre=="digit"){
+            a.push([level,label]);
+            label=0;
+          }
+          break;
+        default:
+          break;
+      }//switch
+    }//if
+    pre=c;
+  }//for i
+  if(pre=="digit")a.push([level,label]); 
+  return new Hydra(a);
 }
 /* this.toString()=string representation of this */
 /* this.toString(x)=string representation of partial hydra starting by x */
