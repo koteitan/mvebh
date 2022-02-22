@@ -67,15 +67,16 @@ Array.prototype.mean = function(){
     return this.sum()/this.length;
 }
 Array.prototype.clone = function(){
-    if ( this[0].constructor == Array ) {
-        var ar, n;
-        ar = new Array( this.length );
-        for ( n = 0; n < ar.length; n++ ) {
-            ar[n] = this[n].clone();
-        }
-        return ar;
+  if(this.length==0)return [];
+  if(this[0].constructor==Array){
+    var ar, n;
+    ar=new Array(this.length);
+    for(n=0;n<ar.length;n++){
+      ar[n] = this[n].clone();
     }
-    return [].concat(this);
+    return ar;
+  }
+  return [].concat(this);
 }
 /* Value of multidimensional array
    with index array i[d]
