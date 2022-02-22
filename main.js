@@ -105,7 +105,7 @@ var doparse=function(){
   * @brief expand intext X Y and output result X[Y] into outtext.
   * @details This function is called by clicking "expand" button.
 */
-var expand=function(){
+var doexpand=function(){
   autosave();
   //input
   var mstr=intext.value;
@@ -115,9 +115,9 @@ var expand=function(){
   var outstr="";
   for(var y=0;y<ystr.length;y++){
     //trim
-    var str=ystr[y].replace(/^\s*/g , "" );
-    var str=   str.replace(/\s*$/g , "" );
-    var str=   str.replace(/\s\s*/g, " ");
+    var str=ystr[y].replace(/^\s*/g ,"" );
+    var str=    str.replace(/\s*$/g ,"" );
+    var str=    str.replace(/\s\s*/g," ");
     if(str!=""){
       var xstr=str.split(" ");
       for(var x=0;x<Math.floor(xstr.length/2);x++){
@@ -139,14 +139,14 @@ var expand=function(){
     outstr+="\n";
   }//y
   outtext.value = outstr;
-  lastcommand=expand;
+  lastcommand=doexpand;
 };
 
 Hydra = function(input){
   if(input instanceof Array){
     this.a = input.clone();
   }else if(typeof input === "string" || input instanceof String){
-    Hydra.parse(input);
+    this.a = Hydra.parse(input).a;
   }
 }
 Hydra.parse = function(str){
@@ -211,7 +211,7 @@ Hydra.prototype.toString=function(x){
     var xs=a.length;
     if(a.length==0)return "";
     ret+=a[x][1];
-    var c=this.getchildren(x);
+    var c=this.children(x);
     if(c.length==0)return ret;
     ret+="^";
     if(c.length>1)ret+="(";
@@ -224,15 +224,15 @@ Hydra.prototype.toString=function(x){
   }
 }
 /* getchildlen(p)=children indices array of the node at p-th column */
-Hydra.prototype.getchildren=function(p){
+Hydra.prototype.children=function(p){
   var c=[];
   for(var x=p+1;x<this.a.length;x++)
-    if(this.getparent(x)==p)
+    if(this.parent(x)==p)
       c.push(x);
   return c;
 }
-/* getparent(c) = parent index of c */
-Hydra.prototype.getparent=function(c){
+/* parent(c) = parent index of c */
+Hydra.prototype.parent=function(c){
   var a=this.a;
   for(var x=c-1;x>=0;x--)
     if(a[x][0]<a[c][0])return x;
@@ -271,4 +271,41 @@ Hydra.prototype.gt=function(hb){
 Hydra.prototype.geq=function(hb){
   return !this.lt(hb);
 }
+Hydra.prototype.expand=function(n){
+  var a=this.a;
+  var len=a.length;
+  if(len==0)return new Hydra([]);
+  var D=this.degrade();
+  if(D.length==0) return new Hydra(a.clone().pop());
+  var r=this.parent(len-1);
+  var delta = D[0]-a[r][0];
+  var G=slice(0,r);
+  var B=[];
+  for(var k=0;k<n;k++){
+    for(var x=1;x<len-2-r;x++){
+      if(x==0){
+        B.push([a[r+x][0]+k*delta, D[1]]);
+      }else{
+        B.push([a[r+x][0]+k*delta, a[r+x][0]]);
+      }
+    }
+  }
+}
+Hydra.prototype.degrade=function(){
+  var a=this.a;
+  var len=a.length;
+  if(a[len-1][0]==0)return [];
 
+  var D=a[len-1].clone();
+
+  if(D[1]>0){
+    D[1]--;
+  }else{
+    var p=this.parent(len-1);
+    while(p>=0 && a[p][0]>0 && a[p][1]==0)p=this.parent(p);
+    if(a[p][0]==0)return [];
+    D[0]=a[p][0];
+    D[1]=a[p][1]-1;
+  }
+  return D;
+}
