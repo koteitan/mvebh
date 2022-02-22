@@ -123,17 +123,17 @@ var doexpand=function(){
       for(var x=0;x<Math.floor(xstr.length/2);x++){
         if(str!=""){
           //parse
-          var a=Kuma3ary.parse(xstr[x*2+0]);
-          var b=Kuma3ary.parse(xstr[x*2+1]);
+          var a=Hydra.parse(xstr[x*2+0]);
+          var b=parseInt(xstr[x*2+1]);
           //out string expression
-          outstr += a.expand(b).toString(mainsugar);
+          outstr += a.expand(b).toString();
         }
         outstr+="  ";
         outtext.value = outstr;
       }//x
       if(xstr.length%2==1){
-        var a=Kuma3ary.parse(xstr[xstr.length-1]);
-        outstr+=a.toString(mainsugar);
+        var a=Hydra.parse(xstr[xstr.length-1]);
+        outstr+=a.toString();
       }
     }
     outstr+="\n";
@@ -276,20 +276,25 @@ Hydra.prototype.expand=function(n){
   var len=a.length;
   if(len==0)return new Hydra([]);
   var D=this.degrade();
-  if(D.length==0) return new Hydra(a.clone().pop());
-  var r=this.parent(len-1);
+  if(D.length==0){
+    a=a.clone();
+    a.pop();
+    return new Hydra(a);
+  }
+  var r=this.parent(this.parent(len-1));
   var delta = D[0]-a[r][0];
-  var G=slice(0,r);
+  var G=a.slice(0,r);
   var B=[];
-  for(var k=0;k<n;k++){
-    for(var x=1;x<len-2-r;x++){
-      if(x==0){
-        B.push([a[r+x][0]+k*delta, D[1]]);
+  for(var k=0;k<=n;k++){
+    for(var x=0;x<len-r-1;x++){
+      if(r+x==len-1){
+        B.push([D[0]+k*delta, D[1]]);
       }else{
         B.push([a[r+x][0]+k*delta, a[r+x][0]]);
       }
     }
   }
+  return new Hydra(G.concat(B));
 }
 Hydra.prototype.degrade=function(){
   var a=this.a;
