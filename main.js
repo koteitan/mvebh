@@ -3,21 +3,10 @@
   * @details This function is called by loading the window.
 */
 window.onload=function(){
-  intext.value = "";
+  form.in.value = "";
   loadlink();
   makelink();
-  window.onresize();
 };
-window.onresize = function(){
-  var clientWidth  = document.documentElement.clientWidth;
-  var clientHeight = document.documentElement.clientHeight;
-  var fixedWidth   = clientWidth /4;
-  var fixedHeight  = clientHeight*0.1;
-  document.getElementById("inputtd" ).width  = Math.floor((clientWidth -fixedWidth )/2*0.99);
-  document.getElementById("outputtd").width  = Math.floor((clientWidth -fixedWidth )/2*0.99);
-  document.getElementById("inputtd" ).height = Math.floor( clientHeight-fixedHeight)*0.5;
-  document.getElementById("outputtd").height = Math.floor( clientHeight-fixedHeight)*0.5;
-}
 var loadlink=function(){
   var query=location.search.substr(1);
   if(query.length>0){
@@ -26,12 +15,12 @@ var loadlink=function(){
     str=str.replace(/\./g, " ");
     str=str.replace(/;/g, "\n");
     str=str.replace(/_/g, "");
-    intext.value=str;
+    form.in.value=str;
   }
 }
 var makelink=function(){
   var query="h=";
-  var str=intext.value;
+  var str=form.in.value;
   str=str.replace(/\n/g, ";");
   str=str.replace(/\s/g, ".");
   query+=str+"_";
@@ -55,8 +44,8 @@ var redraw=function(){
   lastcommand();
 }
 var doclear=function(){
-  intext.value ="";
-  outtext.value="";
+  form.in.value ="";
+  form.out.value="";
   var url=makelink();
   if(url.match(/^https:\/\//) || url.match(/^http:\/\//)){
     url=url.replace(/\/[^\/]*$/,"/");
@@ -66,17 +55,17 @@ var doclear=function(){
   history.pushState(null,null,url);
 }
 /** doparse()
-  * @brief parse intext and output result into outtext.
+  * @brief parse form.in and output result into form.out.
   * @details This function is called by clicking "parse" button.
 */
 var doparse=function(){
   autosave();
   //input
-  var mstr=intext.value;
+  var mstr=form.in.value;
   //split
   var ystr=mstr.split("\n");
   
-  outtext.value="";
+  form.out.value="";
   for(var y=0;y<ystr.length;y++){
     //trim
     var str=ystr[y].replace(/\s\s*/g, " ");
@@ -90,57 +79,40 @@ var doparse=function(){
           //parse
           var h=Hydra.parse(str);
           //out string expression
-          outtext.value+=h.toString();
+          form.out.value+=h.toString();
           //out tree expression
         }
-        outtext.value+="  ";
+        form.out.value+="  ";
       }//x
     }
-    outtext.value+="\n";
+    form.out.value+="\n";
   }//y
   lastcommand=doparse;
 };
 
 /** expand()
-  * @brief expand intext X Y and output result X[Y] into outtext.
+  * @brief expand form.in X Y and output result X[Y] into form.out.
   * @details This function is called by clicking "expand" button.
 */
 var doexpand=function(){
-  autosave();
-  //input
-  var mstr=intext.value;
-  //split
-  var ystr=mstr.split("\n");
-  
-  var outstr="";
-  for(var y=0;y<ystr.length;y++){
-    //trim
-    var str=ystr[y].replace(/^\s*/g ,"" );
-    var str=    str.replace(/\s*$/g ,"" );
-    var str=    str.replace(/\s\s*/g," ");
-    if(str!=""){
-      var xstr=str.split(" ");
-      for(var x=0;x<Math.floor(xstr.length/2);x++){
-        if(str!=""){
-          //parse
-          var a=Hydra.parse(xstr[x*2+0]);
-          var b=parseInt(xstr[x*2+1]);
-          //out string expression
-          outstr += a.expand(b).toString();
-        }
-        outstr+="  ";
-        outtext.value = outstr;
-      }//x
-      if(xstr.length%2==1){
-        var a=Hydra.parse(xstr[xstr.length-1]);
-        outstr+=a.toString();
-      }
-    }
-    outstr+="\n";
-  }//y
-  outtext.value = outstr;
+  var line=form.in.value.split("\n");
+  form.out.value="";
+  for(var i=0;i<line.length;i++){
+    var h=Hydra.parse(line[i]);
+    var t=parseInt(form.bracket.value);
+    var e=h.expand(t);
+    form.out.value+=e.toString()+"\n";
+  }
   lastcommand=doexpand;
-};
+}
+var doexpandcont=function(){
+  var line=form.in.value.split("\n");
+  var h=Hydra.parse(line[line.length-1]);
+  var t=parseInt(form.bracket.value);
+  var e=h.expand(t);
+  form.in.value+="\n"+e.toString();
+  form.in.scrollTop = form.in.scrollHeight;
+}
 
 Hydra = function(input){
   if(input instanceof Array){
