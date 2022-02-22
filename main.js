@@ -17,7 +17,7 @@ window.onresize = function(){
   document.getElementById("outputtd").width  = Math.floor((clientWidth -fixedWidth )/2*0.99);
   document.getElementById("inputtd" ).height = Math.floor( clientHeight-fixedHeight)*0.5;
   document.getElementById("outputtd").height = Math.floor( clientHeight-fixedHeight)*0.5;
-}    
+}
 var loadlink=function(){
   var query=location.search.substr(1);
   if(query.length>0){
@@ -238,3 +238,37 @@ Hydra.prototype.getparent=function(c){
     if(a[x][0]<a[c][0])return x;
   return -1;
 }
+Hydra.prototype.eq=function(hb){
+  var a=this.a;
+  var b=hb.a;
+  for(var x=0;true;x++){
+    if(x==a.length && x==b.length)return true;
+    if(x==a.length || x==b.length)return false;
+    if(a[x][0]!=b[x][0] || a[x][1]!=b[x][1]) return false;
+  }
+}
+Hydra.prototype.lt=function(hb){
+  var a=this.a;
+  var b=hb.a;
+  for(x=0;true;x++){
+    if(x==a.length && x==b.length)return false;
+    if(x==a.length)return true;
+    if(x==b.length)return false;
+    if(a[x][0]<b[x][0])return true;
+    if(a[x][0]>b[x][0])return false;
+    if(a[x][1]<b[x][1])return true;
+    if(a[x][1]>b[x][1])return false;
+  }
+  return false;
+}
+Hydra.prototype.leq=function(hb){
+  return this.eq(hb) || this.lt(hb);
+}
+
+Hydra.prototype.gt=function(hb){
+  return !this.leq(hb);
+}
+Hydra.prototype.geq=function(hb){
+  return !this.lt(hb);
+}
+
